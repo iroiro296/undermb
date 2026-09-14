@@ -292,16 +292,19 @@ body {
 .result {
   flex: 0 1 auto;
   min-height: 0;
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 0.65rem;
-  align-items: end;
   animation: rise 0.5s ease both;
 }
 
 .result__video {
-  width: 100%;
-  max-height: min(22vh, 180px);
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: min(28vh, 240px);
+  height: auto;
   border-radius: 12px;
   background: #0b3d3a;
 }
@@ -382,6 +385,6 @@ body {
   }
 
   .result__video {
-    max-height: 16vh;
+    max-height: 22vh;
   }
 }
