@@ -4,7 +4,13 @@ import { fetchFile, toBlobURL } from "./vendor/util/index.js";
 const SIZE_MARGIN = 0.95;
 const MIN_VIDEO_BPS = 100_000;
 const AUDIO_KBPS = 128;
-const WARN_FILE_MB = 800;
+/** Soft warning — may still work on strong PCs */
+const WARN_FILE_MB = 250;
+/** Hard limit — ffmpeg.wasm keeps the whole file in memory */
+const MAX_FILE_MB = 500;
+
+const CLI_HINT =
+  "このサイズはブラウザでは扱えません。PC上の CLI 版を使ってください（例: python cli/compress.py 動画.mp4 -s 512）。";
 
 const els = {
   dropzone: document.getElementById("dropzone"),
@@ -68,13 +74,24 @@ function selectFile(file) {
   els.dropzone.classList.add("has-file");
   els.dropTitle.textContent = file.name;
   els.dropHint.textContent = `${formatMB(file.size)} MB`;
-  els.compressBtn.disabled = false;
   clearResult();
-  setStatus("");
-  if (file.size > WARN_FILE_MB * 1024 * 1024) {
+
+  const mb = file.size / 1024 / 1024;
+  if (mb > MAX_FILE_MB) {
+    els.compressBtn.disabled = true;
     setStatus(
-      `大きなファイルです（${formatMB(file.size)} MB）。ブラウザのメモリ不足で失敗することがあります。`,
+      `ファイルが大きすぎます（${formatMB(file.size)} MB）。ブラウザ版の上限は約 ${MAX_FILE_MB} MB です。${CLI_HINT}`,
     );
+    return;
+  }
+
+  els.compressBtn.disabled = false;
+  if (mb > WARN_FILE_MB) {
+    setStatus(
+      `やや大きなファイルです（${formatMB(file.size)} MB）。端末によってはメモリ不足で失敗することがあります。`,
+    );
+  } else {
+    setStatus("");
   }
 }
 
@@ -235,6 +252,14 @@ async function compress() {
     return;
   }
 
+  const fileMb = selectedFile.size / 1024 / 1024;
+  if (fileMb > MAX_FILE_MB) {
+    setStatus(
+      `ファイルが大きすぎます（${formatMB(selectedFile.size)} MB）。ブラウザ版の上限は約 ${MAX_FILE_MB} MB です。${CLI_HINT}`,
+    );
+    return;
+  }
+
   const targetBytes = Math.floor(targetMb * 1024 * 1024);
   const codec = "h264";
   els.compressBtn.disabled = true;
@@ -316,13 +341,15 @@ async function compress() {
     if (/SharedArrayBuffer| Sab\b|cross-origin|Worker/i.test(msg)) {
       msg =
         "ブラウザのセキュリティ制限で圧縮エンジンを起動できませんでした。ページを再読み込みして再度お試しください。";
-    } else if (!msg || msg === "Error") {
-      msg = "圧縮に失敗しました。別の形式（MP4）で試すか、短い動画でお試しください。";
+    } else if (/Array buffer|allocation|out of memory|OOM|Invalid string length|Memory/i.test(msg)) {
+      msg = `メモリ不足で失敗しました。${CLI_HINT}`;
+    } else if (!msg || msg === "Error" || msg === "undefined") {
+      msg = `圧縮に失敗しました。ファイルが大きすぎる場合は CLI 版を使ってください。別の形式（MP4）や短い動画でも試せます。`;
     }
     setStatus(`失敗: ${msg}`);
     setProgress(0, "エラー");
   } finally {
-    els.compressBtn.disabled = !selectedFile;
+    els.compressBtn.disabled = !selectedFile || selectedFile.size / 1024 / 1024 > MAX_FILE_MB;
   }
 }
 
