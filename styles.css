@@ -95,10 +95,8 @@ body {
 }
 
 .step--drop {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
 }
 
 .step--controls {
@@ -116,8 +114,7 @@ body {
 
 .dropzone {
   position: relative;
-  flex: 1 1 auto;
-  min-height: 0;
+  height: clamp(148px, 24vh, 210px);
   border: 1.5px dashed rgba(15, 107, 97, 0.45);
   border-radius: var(--radius);
   background: var(--panel);
@@ -125,6 +122,8 @@ body {
   box-shadow: var(--shadow);
   overflow: hidden;
   cursor: pointer;
+  display: flex;
+  align-items: center;
   transition: border-color 0.2s ease, transform 0.25s ease, background 0.2s ease;
 }
 
@@ -147,8 +146,9 @@ body {
 
 .dropzone__visual {
   position: absolute;
-  inset: auto -8% -40% auto;
-  width: min(340px, 58%);
+  right: -6%;
+  bottom: -38%;
+  width: min(360px, 52%);
   aspect-ratio: 16 / 10;
   border-radius: 16px;
   background:
@@ -169,7 +169,7 @@ body {
 .dropzone__copy {
   position: relative;
   z-index: 1;
-  padding: clamp(1rem, 2.5vh, 1.5rem) clamp(1rem, 2vw, 1.5rem);
+  padding: 0 1.4rem;
   max-width: 28rem;
 }
 
@@ -327,7 +327,8 @@ body {
 
 .foot {
   flex: 0 0 auto;
-  margin-top: clamp(0.4rem, 1.2vh, 0.75rem);
+  margin-top: auto;
+  padding-top: 0.5rem;
   color: var(--mute);
   font-size: 0.75rem;
   animation: rise 1s ease 0.15s both;
@@ -337,9 +338,9 @@ body {
   margin: 0;
 }
 
-/* When result is visible, shrink the drop area a bit more */
-.workspace:has(.result:not([hidden])) .step--drop {
-  flex: 0.7 1 auto;
+/* When result is visible, keep dropzone compact */
+.workspace:has(.result:not([hidden])) .dropzone {
+  height: clamp(120px, 18vh, 160px);
 }
 
 @keyframes rise {
