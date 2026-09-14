@@ -5,35 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="UnderMB — 動画を指定MB以下に圧縮。処理はブラウザ内のみ。"
+      content="UnderMB — 動画を指定MB以下にブラウザだけで圧縮。サーバーにアップロードしません。"
     />
-    <meta name="theme-color" content="#1e3a5f" />
+    <meta name="theme-color" content="#0b3d3a" />
     <title>UnderMB — 動画を指定MB以下に圧縮</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
     <script src="./coi-serviceworker.js"></script>
   </head>
   <body>
-    <main class="page">
-      <header class="header">
-        <h1 class="logo">UnderMB</h1>
-        <p class="desc">
-          動画を指定したサイズ（MB）以下に圧縮するツールです。<br />
-          ファイルはサーバーに送らず、この端末のブラウザ内だけで処理します。
+    <div class="atmosphere" aria-hidden="true"></div>
+    <main class="shell">
+      <header class="brand">
+        <h1 class="brand__name">UnderMB</h1>
+        <p class="brand__sub">
+          動画を指定したMB以下に圧縮します。ファイルはサーバーに送らず、この端末だけで処理します。
         </p>
       </header>
 
-      <ol class="steps">
-        <li class="panel">
-          <div class="step-head">
-            <span class="step-num">1</span>
-            <span class="step-title">動画を選ぶ</span>
-          </div>
+      <section class="workspace" aria-label="圧縮ツール">
+        <div class="step">
+          <p class="step__label">1. 動画を選ぶ</p>
           <div
             id="dropzone"
             class="dropzone"
@@ -47,60 +44,57 @@
               accept="video/*,.mp4,.mov,.mkv,.webm,.avi,.m4v"
               hidden
             />
-            <p class="dropzone__title" id="dropTitle">ここにドロップ、またはクリックして選択</p>
-            <p class="dropzone__hint" id="dropHint">対応形式: MP4 / MOV / WebM / MKV など</p>
-          </div>
-        </li>
-
-        <li class="panel">
-          <div class="step-head">
-            <span class="step-num">2</span>
-            <span class="step-title">上限サイズ</span>
-          </div>
-          <label class="size-field">
-            <input id="sizeInput" type="number" min="1" step="1" value="512" />
-            <span class="size-field__unit">MB 以下</span>
-          </label>
-          <p class="note">X（旧Twitter）向けなら 512 が目安です。</p>
-        </li>
-
-        <li class="panel">
-          <div class="step-head">
-            <span class="step-num">3</span>
-            <span class="step-title">圧縮</span>
-          </div>
-          <button id="compressBtn" class="btn" type="button" disabled>圧縮を開始</button>
-          <p class="note" id="status" role="status">
-            初回のみ、圧縮用エンジン（約30MB）の読み込みがあります。
-          </p>
-
-          <div class="progress" id="progressBlock" hidden>
-            <div class="progress__row">
-              <span id="progressLabel">準備中…</span>
-              <span id="progressPct">0%</span>
-            </div>
-            <div
-              class="progress__bar"
-              role="progressbar"
-              aria-valuemin="0"
-              aria-valuemax="100"
-              aria-valuenow="0"
-              id="progressBar"
-            >
-              <div class="progress__fill" id="progressFill"></div>
+            <div class="dropzone__visual" aria-hidden="true"></div>
+            <div class="dropzone__copy">
+              <p class="dropzone__title" id="dropTitle">動画をドロップ</p>
+              <p class="dropzone__hint" id="dropHint">またはクリックして選択 · MP4 / MOV / WebM など</p>
             </div>
           </div>
-        </li>
-      </ol>
+        </div>
 
-      <section class="panel result" id="result" hidden aria-label="結果">
-        <h2 class="result__heading">圧縮が完了しました</h2>
-        <video id="preview" class="result__video" controls playsinline></video>
-        <a id="downloadLink" class="btn btn--secondary" download>ダウンロード</a>
+        <div class="step">
+          <p class="step__label">2. 上限サイズ</p>
+          <div class="controls">
+            <label class="field">
+              <span class="field__input-wrap">
+                <input id="sizeInput" class="field__input" type="number" min="1" step="1" value="512" />
+                <span class="field__suffix">MB 以下</span>
+              </span>
+            </label>
+            <button id="compressBtn" class="cta" type="button" disabled>3. 圧縮する</button>
+          </div>
+          <p class="hint">X（旧Twitter）向けなら 512MB が目安です。</p>
+        </div>
+
+        <div class="progress-block" id="progressBlock" hidden>
+          <div class="progress-meta">
+            <span id="progressLabel">準備中…</span>
+            <span id="progressPct">0%</span>
+          </div>
+          <div
+            class="progress-track"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            id="progressBar"
+          >
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <p class="status" id="status" role="status">
+          初回のみ、圧縮用エンジン（約30MB）の読み込みがあります。
+        </p>
+
+        <div class="result" id="result" hidden>
+          <video id="preview" class="result__video" controls playsinline></video>
+          <a id="downloadLink" class="result__download" download>ダウンロード</a>
+        </div>
       </section>
 
-      <footer class="footer">
-        <p>UnderMB · ブラウザ内処理</p>
+      <footer class="foot">
+        <p>処理はすべてブラウザ内 · 無料</p>
       </footer>
     </main>
 
