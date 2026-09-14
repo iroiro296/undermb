@@ -5,6 +5,7 @@ __pycache__/
 .idea/
 node_modules/
 dist/
+_site/
 .vercel/
 test_*.mp4
 *.log
