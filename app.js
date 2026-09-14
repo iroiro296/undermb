@@ -10,7 +10,7 @@ const WARN_FILE_MB = 250;
 const MAX_FILE_MB = 500;
 
 const CLI_HINT =
-  "このサイズはブラウザでは扱えません。PC上の CLI 版を使ってください（例: python cli/compress.py 動画.mp4 -s 512）。";
+  "ブラウザ版は元ファイルをメモリに載せるため、大きい動画は向きません。PC上の CLI 版を使ってください（例: python cli/compress.py 動画.mp4 -s 512）。";
 
 const els = {
   dropzone: document.getElementById("dropzone"),
@@ -80,7 +80,7 @@ function selectFile(file) {
   if (mb > MAX_FILE_MB) {
     els.compressBtn.disabled = true;
     setStatus(
-      `ファイルが大きすぎます（${formatMB(file.size)} MB）。ブラウザ版の上限は約 ${MAX_FILE_MB} MB です。${CLI_HINT}`,
+      `元ファイルが大きすぎます（${formatMB(file.size)} MB）。圧縮後の目標サイズではなく、元動画のサイズ制限です（目安 ${MAX_FILE_MB} MBまで）。${CLI_HINT}`,
     );
     return;
   }
@@ -88,7 +88,7 @@ function selectFile(file) {
   els.compressBtn.disabled = false;
   if (mb > WARN_FILE_MB) {
     setStatus(
-      `やや大きなファイルです（${formatMB(file.size)} MB）。端末によってはメモリ不足で失敗することがあります。`,
+      `元ファイルがやや大きいです（${formatMB(file.size)} MB）。圧縮後の目標とは別で、端末のメモリ次第では失敗することがあります。`,
     );
   } else {
     setStatus("");
@@ -255,7 +255,7 @@ async function compress() {
   const fileMb = selectedFile.size / 1024 / 1024;
   if (fileMb > MAX_FILE_MB) {
     setStatus(
-      `ファイルが大きすぎます（${formatMB(selectedFile.size)} MB）。ブラウザ版の上限は約 ${MAX_FILE_MB} MB です。${CLI_HINT}`,
+      `元ファイルが大きすぎます（${formatMB(selectedFile.size)} MB）。圧縮後の目標サイズではなく、元動画のサイズ制限です（目安 ${MAX_FILE_MB} MBまで）。${CLI_HINT}`,
     );
     return;
   }
