@@ -24,12 +24,12 @@
       <header class="brand">
         <h1 class="brand__name">UnderMB</h1>
         <p class="brand__sub">
-          動画を指定したMB以下に圧縮します。ファイルはサーバーに送らず、この端末だけで処理します。
+          指定MB以下に圧縮 · サーバーには送りません
         </p>
       </header>
 
       <section class="workspace" aria-label="圧縮ツール">
-        <div class="step">
+        <div class="step step--drop">
           <p class="step__label">1. 動画を選ぶ</p>
           <div
             id="dropzone"
@@ -52,8 +52,8 @@
           </div>
         </div>
 
-        <div class="step">
-          <p class="step__label">2. 上限サイズ</p>
+        <div class="step step--controls">
+          <p class="step__label">2. 上限サイズ　／　3. 圧縮</p>
           <div class="controls">
             <label class="field">
               <span class="field__input-wrap">
@@ -61,9 +61,9 @@
                 <span class="field__suffix">MB 以下</span>
               </span>
             </label>
-            <button id="compressBtn" class="cta" type="button" disabled>3. 圧縮する</button>
+            <button id="compressBtn" class="cta" type="button" disabled>圧縮する</button>
           </div>
-          <p class="hint">X（旧Twitter）向けなら 512MB が目安です。</p>
+          <p class="hint">X向けの目安は 512MB · <span id="status" role="status">初回はエンジン読込（約30MB）あり</span></p>
         </div>
 
         <div class="progress-block" id="progressBlock" hidden>
@@ -83,10 +83,6 @@
           </div>
         </div>
 
-        <p class="status" id="status" role="status">
-          初回のみ、圧縮用エンジン（約30MB）の読み込みがあります。
-        </p>
-
         <div class="result" id="result" hidden>
           <video id="preview" class="result__video" controls playsinline></video>
           <a id="downloadLink" class="result__download" download>ダウンロード</a>
@@ -94,7 +90,7 @@
       </section>
 
       <footer class="foot">
-        <p>処理はすべてブラウザ内 · 無料</p>
+        <p>処理はすべてブラウザ内</p>
       </footer>
     </main>
 
