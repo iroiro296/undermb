@@ -53,7 +53,7 @@
         </div>
 
         <div class="step step--controls">
-          <p class="step__label">2. 上限サイズ　／　3. 圧縮</p>
+          <p class="step__label">2. 上限サイズ</p>
           <div class="controls">
             <label class="field">
               <span class="field__input-wrap">
@@ -61,9 +61,10 @@
                 <span class="field__suffix">MB 以下</span>
               </span>
             </label>
-            <button id="compressBtn" class="cta" type="button" disabled>圧縮する</button>
+            <button id="compressBtn" class="cta" type="button" disabled>3. 圧縮する</button>
+            <span class="hint hint--inline">X（旧Twitter）向けの目安は 512MB</span>
           </div>
-          <p class="hint">X向けの目安は 512MB · <span id="status" role="status">初回はエンジン読込（約30MB）あり</span></p>
+          <p class="status" id="status" role="status">初回のみ、圧縮用エンジン（約30MB）の読み込みがあります。</p>
         </div>
 
         <div class="progress-block" id="progressBlock" hidden>
