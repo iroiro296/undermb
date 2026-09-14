@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="UnderMB — 動画を指定MB以下にブラウザだけで圧縮。Xなどへの投稿用。サーバーにアップロードしません。"
+    />
+    <meta name="theme-color" content="#0b3d3a" />
+    <title>UnderMB — 動画を指定MB以下に圧縮</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./coi-serviceworker.js"></script>
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true"></div>
+    <main class="shell">
+      <header class="brand">
+        <p class="brand__name">UnderMB</p>
+        <h1 class="brand__line">投稿できるサイズまで、ここで圧縮。</h1>
+        <p class="brand__sub">
+          動画は端末内だけで処理します。サーバーには送りません。
+        </p>
+      </header>
+
+      <section class="workspace" aria-label="圧縮ツール">
+        <div
+          id="dropzone"
+          class="dropzone"
+          tabindex="0"
+          role="button"
+          aria-label="動画ファイルを選択またはドロップ"
+        >
+          <input
+            id="fileInput"
+            type="file"
+            accept="video/*,.mp4,.mov,.mkv,.webm,.avi,.m4v"
+            hidden
+          />
+          <div class="dropzone__visual" aria-hidden="true"></div>
+          <div class="dropzone__copy">
+            <p class="dropzone__title" id="dropTitle">動画をドロップ</p>
+            <p class="dropzone__hint" id="dropHint">またはクリックして選択 · MP4 / MOV / WebM など</p>
+          </div>
+        </div>
+
+        <div class="controls">
+          <label class="field">
+            <span class="field__label">上限サイズ</span>
+            <span class="field__input-wrap">
+              <input id="sizeInput" class="field__input" type="number" min="1" step="1" value="512" />
+              <span class="field__suffix">MB</span>
+            </span>
+          </label>
+
+          <label class="field">
+            <span class="field__label">コーデック</span>
+            <select id="codecSelect" class="field__select">
+              <option value="h264" selected>H.264（X / 互換性優先）</option>
+            </select>
+          </label>
+
+          <button id="compressBtn" class="cta" type="button" disabled>圧縮する</button>
+        </div>
+
+        <div class="progress-block" id="progressBlock" hidden>
+          <div class="progress-meta">
+            <span id="progressLabel">準備中…</span>
+            <span id="progressPct">0%</span>
+          </div>
+          <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <p class="status" id="status" role="status"></p>
+
+        <div class="result" id="result" hidden>
+          <video id="preview" class="result__video" controls playsinline></video>
+          <a id="downloadLink" class="result__download" download>ダウンロード</a>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <p>FFmpeg.wasm · 処理はすべてブラウザ内 · 無料で公開利用可</p>
+      </footer>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
