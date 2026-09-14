@@ -86,7 +86,7 @@ async function ensureFFmpeg(onLoadProgress) {
   }
   loadingCore = true;
   try {
-    onLoadProgress?.(5, "エンコーダを読み込み中…");
+    onLoadProgress?.(1, "エンジンを準備中…");
     const instance = new FFmpeg();
     instance.on("log", ({ message }) => {
       if (message && /error|failed/i.test(message)) {
@@ -94,7 +94,7 @@ async function ensureFFmpeg(onLoadProgress) {
       }
     });
     bindProgress(instance);
-    onLoadProgress?.(20, "FFmpeg コアを取得中（初回のみ）…");
+    onLoadProgress?.(2, "圧縮エンジンを取得中（初回のみ）…");
     const corePkg = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm";
     const workerURL = new URL("./vendor/ffmpeg/worker.js", import.meta.url).href;
     await instance.load({
@@ -104,7 +104,7 @@ async function ensureFFmpeg(onLoadProgress) {
       wasmURL: await toBlobURL(`${corePkg}/ffmpeg-core.wasm`, "application/wasm"),
     });
     ffmpeg = instance;
-    onLoadProgress?.(35, "準備完了");
+    onLoadProgress?.(4, "準備完了");
     return ffmpeg;
   } finally {
     loadingCore = false;
@@ -154,18 +154,28 @@ function inputName(file) {
 
 /** @type {{ start: number, end: number, label: string }} */
 const progressRange = { start: 0, end: 1, label: "" };
+let lastOverallPct = 0;
 
 function bindProgress(ff) {
   ff.on("progress", ({ progress }) => {
+    // ffmpeg.wasm は稀に 1 超や後退を報告するので丸める
     const local = Math.max(0, Math.min(1, Number(progress) || 0));
     const overall = progressRange.start + (progressRange.end - progressRange.start) * local;
-    setProgress(overall * 100, progressRange.label);
+    const pct = overall * 100;
+    if (pct + 0.05 < lastOverallPct) return;
+    lastOverallPct = Math.max(lastOverallPct, pct);
+    setProgress(lastOverallPct, progressRange.label);
   });
 }
 
 async function encodeOnce(ff, file, outName, videoBps, codec, rangeStart, rangeEnd, label) {
   const inName = inputName(file);
-  await ff.writeFile(inName, await fetchFile(file));
+  const loadEnd = rangeStart + (rangeEnd - rangeStart) * 0.08;
+  setProgress(rangeStart * 100, "動画データを読み込み中…");
+  const fileData = await fetchFile(file);
+  setProgress(((rangeStart + loadEnd) / 2) * 100, "作業領域へコピー中…");
+  await ff.writeFile(inName, fileData);
+  setProgress(loadEnd * 100, label);
 
   const vcodec = codec === "h265" ? "libx265" : "libx264";
   const args = [
@@ -197,10 +207,11 @@ async function encodeOnce(ff, file, outName, videoBps, codec, rangeStart, rangeE
   }
   args.push(outName);
 
-  progressRange.start = rangeStart;
+  progressRange.start = loadEnd;
   progressRange.end = rangeEnd;
   progressRange.label = label;
-  setProgress(rangeStart * 100, label);
+  lastOverallPct = Math.max(lastOverallPct, loadEnd * 100);
+  setProgress(lastOverallPct, label);
 
   try {
     await ff.exec(args);
@@ -211,6 +222,8 @@ async function encodeOnce(ff, file, outName, videoBps, codec, rangeStart, rangeE
       /* ignore */
     }
   }
+  lastOverallPct = Math.max(lastOverallPct, rangeEnd * 100);
+  setProgress(lastOverallPct, label);
 }
 
 async function compress() {
@@ -226,6 +239,7 @@ async function compress() {
   const codec = "h264";
   els.compressBtn.disabled = true;
   clearResult();
+  lastOverallPct = 0;
   setProgress(0, "開始…");
 
   try {
@@ -243,14 +257,18 @@ async function compress() {
     const duration = await probeDuration(selectedFile);
     let videoBps = calcVideoBitrate(targetBytes, duration);
 
-    const ff = await ensureFFmpeg((p, label) => setProgress(p, label));
+    const ff = await ensureFFmpeg((p, label) => {
+      lastOverallPct = Math.max(lastOverallPct, p);
+      setProgress(lastOverallPct, label);
+    });
     const outName = "output.mp4";
 
     setStatus(
-      `目標 ${targetMb} MB · ${duration.toFixed(1)}s · 映像 約 ${Math.round(videoBps / 1000)} kbps`,
+      `目標 ${targetMb} MB · ${duration.toFixed(1)}s · 映像 約 ${Math.round(videoBps / 1000)} kbps（ブラウザ圧縮は時間がかかることがあります）`,
     );
 
-    await encodeOnce(ff, selectedFile, outName, videoBps, codec, 0.35, 0.9, "圧縮中…");
+    // 本圧縮に 5〜95% を割り当て（先頭の急上昇＝準備完了に見えないように）
+    await encodeOnce(ff, selectedFile, outName, videoBps, codec, 0.05, 0.95, "圧縮中…");
 
     let data = await ff.readFile(outName);
     let size = data.byteLength;
@@ -264,7 +282,7 @@ async function compress() {
       } catch {
         /* ignore */
       }
-      await encodeOnce(ff, selectedFile, outName, videoBps, codec, 0.9, 0.99, "再圧縮中…");
+      await encodeOnce(ff, selectedFile, outName, videoBps, codec, 0.95, 0.99, "再圧縮中…");
       data = await ff.readFile(outName);
       size = data.byteLength;
     }
