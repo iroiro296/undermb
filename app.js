@@ -15,7 +15,6 @@ const els = {
   dropTitle: document.getElementById("dropTitle"),
   dropHint: document.getElementById("dropHint"),
   sizeInput: document.getElementById("sizeInput"),
-  codecSelect: document.getElementById("codecSelect"),
   compressBtn: document.getElementById("compressBtn"),
   progressBlock: document.getElementById("progressBlock"),
   progressLabel: document.getElementById("progressLabel"),
@@ -71,7 +70,7 @@ function selectFile(file) {
   selectedFile = file;
   els.dropzone.classList.add("has-file");
   els.dropTitle.textContent = file.name;
-  els.dropHint.textContent = `${formatMB(file.size)} MB · 上限を指定して圧縮`;
+  els.dropHint.textContent = `${formatMB(file.size)} MB`;
   els.compressBtn.disabled = false;
   clearResult();
   setStatus("");
@@ -220,7 +219,7 @@ async function compress() {
   }
 
   const targetBytes = Math.floor(targetMb * 1024 * 1024);
-  const codec = els.codecSelect.value;
+  const codec = "h264";
   els.compressBtn.disabled = true;
   clearResult();
   setProgress(0, "開始…");
@@ -329,4 +328,4 @@ function wireUi() {
 }
 
 wireUi();
-setStatus("初回はエンコーダ（約30MB）の読み込みがあります。");
+setStatus("初回のみ、圧縮用エンジン（約30MB）の読み込みがあります。");
