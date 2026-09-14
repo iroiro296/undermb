@@ -6,7 +6,8 @@
 
 静的サイトです。**動画はサーバーに送らず、ブラウザ内（FFmpeg.wasm）で圧縮**します。
 
-- 公開 URL: GitHub Pages 有効化後に表示されます
+- 公開 URL: https://iroiro296.github.io/undermb/
+- リポジトリ: https://github.com/iroiro296/undermb
 - ローカル確認: ルートで静的サーバを起動（`npx serve .` など）
 
 ## CLI 版（ローカル高速）
