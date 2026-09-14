@@ -1,8 +1,5 @@
-import { FFmpeg } from "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/esm/index.js";
-import {
-  fetchFile,
-  toBlobURL,
-} from "https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/esm/index.js";
+import { FFmpeg } from "./vendor/ffmpeg/index.js";
+import { fetchFile, toBlobURL } from "./vendor/util/index.js";
 
 const SIZE_MARGIN = 0.95;
 const MIN_VIDEO_BPS = 100_000;
@@ -97,11 +94,14 @@ async function ensureFFmpeg(onLoadProgress) {
       }
     });
     bindProgress(instance);
-    const baseURL = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm";
     onLoadProgress?.(20, "FFmpeg コアを取得中（初回のみ）…");
+    const corePkg = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm";
+    const workerURL = new URL("./vendor/ffmpeg/worker.js", import.meta.url).href;
     await instance.load({
-      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+      // Worker は同一オリジン必須（COEP 下で CDN Worker は SecurityError）
+      classWorkerURL: workerURL,
+      coreURL: await toBlobURL(`${corePkg}/ffmpeg-core.js`, "text/javascript"),
+      wasmURL: await toBlobURL(`${corePkg}/ffmpeg-core.wasm`, "application/wasm"),
     });
     ffmpeg = instance;
     onLoadProgress?.(35, "準備完了");
@@ -171,6 +171,10 @@ async function encodeOnce(ff, file, outName, videoBps, codec, rangeStart, rangeE
   const args = [
     "-i",
     inName,
+    "-map",
+    "0:v:0",
+    "-map",
+    "0:a?",
     "-c:v",
     vcodec,
     "-b:v",
@@ -271,7 +275,7 @@ async function compress() {
       /* ignore */
     }
 
-    const blob = new Blob([data.buffer], { type: "video/mp4" });
+    const blob = new Blob([data], { type: "video/mp4" });
     objectUrl = URL.createObjectURL(blob);
     const base = selectedFile.name.replace(/\.[^.]+$/, "");
     const label = Number.isInteger(targetMb) ? String(targetMb) : String(targetMb).replace(".", "p");
@@ -290,7 +294,13 @@ async function compress() {
     setStatus(note);
   } catch (err) {
     console.error(err);
-    const msg = err?.message || String(err);
+    let msg = err?.message || String(err);
+    if (/SharedArrayBuffer| Sab\b|cross-origin|Worker/i.test(msg)) {
+      msg =
+        "ブラウザのセキュリティ制限で圧縮エンジンを起動できませんでした。ページを再読み込みして再度お試しください。";
+    } else if (!msg || msg === "Error") {
+      msg = "圧縮に失敗しました。別の形式（MP4）で試すか、短い動画でお試しください。";
+    }
     setStatus(`失敗: ${msg}`);
     setProgress(0, "エラー");
   } finally {
