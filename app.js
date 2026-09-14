@@ -5,9 +5,12 @@ const SIZE_MARGIN = 0.95;
 const MIN_VIDEO_BPS = 100_000;
 const AUDIO_KBPS = 128;
 /** Soft warning — may still work on strong PCs */
-const WARN_FILE_MB = 250;
-/** Hard limit — ffmpeg.wasm keeps the whole file in memory */
-const MAX_FILE_MB = 500;
+const WARN_FILE_MB = 500;
+/**
+ * Hard limit for attempting encode in-browser.
+ * Depends on device RAM; ~1GB has worked in practice, ~2GB typically fails.
+ */
+const MAX_FILE_MB = 1200;
 
 const CLI_HINT =
   "ブラウザ版は元ファイルをメモリに載せるため、大きい動画は向きません。PC上の CLI 版を使ってください（例: python cli/compress.py 動画.mp4 -s 512）。";
